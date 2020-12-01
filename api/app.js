@@ -27,7 +27,7 @@ var bearerToken = require('express-bearer-token');
 var cors = require('cors');
 
 var user = require('./registerUser')
-// var invoke = require('./invoke');
+var invoke = require('./invoke');
 // var query = require('./query');
 var host = process.env.HOST || "localhost";
 var port = process.env.PORT || "4000";
@@ -45,8 +45,7 @@ app.use(bodyParser.urlencoded({
 // set secret variable
 app.set('secret', 'thisismysecret');
 app.use(expressJWT({
-    secret: 'thisismysecret',
-    algorithms: ['RS256'] 
+    secret: 'thisismysecret'
 }).unless({
 	path: ['/users']
 }));
@@ -119,17 +118,17 @@ app.post('/users', async function(req, res) {
 		username: username,
 		orgName: orgName
 	}, app.get('secret'));
-	let response = await user.enrollUser(username, orgName)
-	logger.debug('-- returned from registering the username %s for organization %s',username,orgName);
-    if (response.success) {
-		logger.debug('Successfully registered the username %s for organization %s',username,orgName);
-		response.token = token;
-		res.json(response);
-	} else {
-		logger.debug('Failed to register the username %s for organization %s with::%s',username,orgName,response);
-		res.json({success: false, message: response});
-	}
-
+	user.enrollUser(username, orgName).then((response) => {
+		logger.debug('-- returned from registering the username %s for organization %s',username,orgName);
+		if (response.success) {
+			logger.debug('Successfully registered the username %s for organization %s',username,orgName);
+			response.token = token;
+			res.json(response);
+		} else {
+			logger.debug('Failed to register the username %s for organization %s with::%s',username,orgName,response);
+			res.json({success: false, message: response});
+		}
+	})
 });
 
 // Invoke transaction on chaincode on target peers
