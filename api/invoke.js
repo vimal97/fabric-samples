@@ -51,8 +51,17 @@ async function invokeChaincode(peers, channelName, chaincodeName, chaincodeFunct
         // Disconnect from the gateway.
         await gateway.disconnect();
 
+        return {
+            success: true,
+            message: "Transaction submitted successfully"
+        }
+
     } catch (error) {
         console.error(`Failed to submit transaction: ${error}`);
+        return {
+            success: true,
+            error: error
+        }
         process.exit(1);
     }
 }
